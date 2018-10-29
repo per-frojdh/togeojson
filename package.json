@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "eslint togeojson.js && tape test/*.js",
+    "test:old": "tape test/groundoverlay.js",
     "cov": "istanbul cover test/index.js && coveralls < ./coverage/lcov.info",
     "browser": "browserify -t brfs test/index.js > test/bundle.js"
   },

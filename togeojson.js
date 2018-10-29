@@ -114,7 +114,8 @@ var toGeoJSON = (function() {
                 // all root placemarks in the file
                 placemarks = get(doc, 'Placemark'),
                 styles = get(doc, 'Style'),
-                styleMaps = get(doc, 'StyleMap');
+                styleMaps = get(doc, 'StyleMap'),
+                groundOverlay = get(doc, 'GroundOverlay');
 
             for (var k = 0; k < styles.length; k++) {
                 var hash = okhash(xml2str(styles[k])).toString(16);
@@ -133,6 +134,10 @@ var toGeoJSON = (function() {
             }
             for (var j = 0; j < placemarks.length; j++) {
                 gj.features = gj.features.concat(getPlacemark(placemarks[j]));
+                
+            }
+            for (var h = 0; h < groundOverlay.length; h++) {
+                gj.features = gj.features.concat(getGroundOverlay(groundOverlay[h]));
             }
             function kmlColor(v) {
                 var color, opacity;
@@ -158,6 +163,46 @@ var toGeoJSON = (function() {
                     coords: coords,
                     times: times
                 };
+            }
+            function getGroundOverlay(root) {
+                var name = nodeVal(get1(root, 'name')),
+                    visibility = nodeVal(get1(root, 'visibility')),
+                    description = nodeVal(get1(root, 'description')),
+                    color = nodeVal(get1(root, 'color')),
+                    bboxNode = get1(root, 'LatLonBox'),
+                    properties = {},
+                    geometry = {};
+
+                if (name) properties.name = name;
+                if (visibility) properties.visibility = visibility;
+                if (description) properties.descripition = description;
+                if (color) properties.color = color;
+
+                properties.isGroundOverlay = true;
+
+                if (bboxNode) {
+                    var north = parseFloat(nodeVal(get1(bboxNode, 'north'))),
+                        south = parseFloat(nodeVal(get1(bboxNode, 'south'))),
+                        east = parseFloat(nodeVal(get1(bboxNode, 'east'))),
+                        west = parseFloat(nodeVal(get1(bboxNode, 'west')));
+                    geometry.type = 'Polygon';
+                    geometry.coordinates = [
+                        [
+                          [west, north],
+                          [east, north],
+                          [east, south],
+                          [west, south],
+                          [west, north]
+                        ]
+                    ];
+                }
+
+                var feature = {
+                    type: 'Feature',
+                    geometry: geometry,
+                    properties: properties
+                };
+                return [feature];
             }
             function getGeometry(root) {
                 var geomNode, geomNodes, i, j, k, geoms = [], coordTimes = [];
