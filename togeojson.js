@@ -170,6 +170,7 @@ var toGeoJSON = (function() {
                     description = nodeVal(get1(root, 'description')),
                     color = nodeVal(get1(root, 'color')),
                     bboxNode = get1(root, 'LatLonBox'),
+                    Icon = get1(root, 'Icon'),
                     properties = {},
                     geometry = {};
 
@@ -179,6 +180,10 @@ var toGeoJSON = (function() {
                 if (color) properties.color = color;
 
                 properties.isGroundOverlay = true;
+
+                if (Icon) {
+                    properties.file = nodeVal(get1(Icon, 'href'));
+                }
 
                 if (bboxNode) {
                     var north = parseFloat(nodeVal(get1(bboxNode, 'north'))),
